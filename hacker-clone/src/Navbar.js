@@ -3,7 +3,7 @@ import './index.css';
 export default function Navbar() {
     return (
 
-        <nav className="nav">
+    <nav className="nav">
       <p className="section">Hacker Clone</p>
       <ul>
         <div class="topnav">
