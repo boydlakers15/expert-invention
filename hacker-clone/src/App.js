@@ -32,7 +32,7 @@ function App() {
     e.preventDefault()
 
     if(!text) {
-      toast.error('☝️ Search bar is Empty!', {
+      toast.error(':index_pointing_at_the_viewer:  Search bar is Empty!', {
         
         position: "top-center",
         autoClose: 5000,
