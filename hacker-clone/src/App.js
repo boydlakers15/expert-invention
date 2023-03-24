@@ -1,120 +1,147 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import mock from "./mock";
 import {format} from "date-fns";
-import { ToastContainer, Toast, toast } from "react-toastify";
-import 'react-toastify/dist/ReactToastify.css';
-import Navbar from "./Navbar";
 
-function App() {
+export default function App() {
+  console.log("mock", mock.hits);
+
+  //useState
+  const [data, setData] = useState(mock.hits);
+  const [searchBar, setSearchBar] = useState("");
+  const [numItems, setNumItems] = useState(5);
+
   
-  const [items, setItems] = useState([]);
-  const [query, setQuery] = useState("");
-  const [text, setText] = useState("");
-  const [largeTitle, setLargeTitle] = useState([]);
-  const[isLoading, setIsLoading] = useState(true);
 
+  //useEffect to get the data from API. [] means at the end is trigger this once and that is all.
   useEffect(() => {
-    setIsLoading(true);
+    getData();
+  }, []);
 
-    const getArticals = async() => {
-      const response = await fetch(`http://hn.algolia.com/api/v1/search?query=${query}`)
-      const data = await response.json() 
-      console.log(data)
-      setItems(data.hits)
-      setLargeTitle(data.hits[0])
+  //useEffect to search inside the API. Here we are adding [searchBar] at the end and defining this useEffect in the return to set it whenever there is a search, it will be triggered.
+  useEffect(() => {
+    getSearchData();
+  }, [searchBar]);
 
-    }
-    getArticals()
-    setIsLoading(false);
-  }, [query])
+  //we are defining the function that we put in the first useEffect above.
+  //Also the API is added.
+  const getData = () => {
+    fetch("https://hn.algolia.com/api/v1/search?query=...#")
+      .then((respond) => respond.json())
+      .then((data) => setData(data.hits))
+      .catch((err) => console.log(err));
+  };
 
+  //Where it says foo in the example of the link, we added ${searchBar} to make that data dynamic for any keywords that is entered in the searchbar.
+  const getSearchData = () => {
+    fetch(`http://hn.algolia.com/api/v1/search?query=${searchBar}&tags=story`)
+      .then((respond) => respond.json())
+      .then((data) => setData(data.hits))
+      .catch((err) => console.log(err));
+  };
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  
 
-    if(!text) {
-      toast.error(':index_pointing_at_the_viewer:  Search bar is Empty!', {
-        
-        position: "top-center",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "colored",
-        });
-    }
-    else {
-      setQuery(text)
-      setText('')
-
-    }
-  }
-
-    
   return (
-    <>
-    <Navbar />
-<section className="section">
-  <form autoComplete="off" onSubmit={handleSubmit}>
-    <input 
-      type='text' 
-      name="search" 
-      id="search" 
-      value={text}
-      onChange={(e) => setText(e.target.value)} 
-      placeholder="Search for something">
-
-    </input>
-      <button>Search</button>
+    <div className="app">
+      <div>
+        <ul className="nav-bar">
+          <li>
+          <img className='img' src='https://hn.algolia.com/packs/media/images/logo-hn-search-a822432b.png'></img>Hacker Clone
+          </li>
+          <li>
+            <a href="./new">new</a>
+          </li>
+          <li>
+            <a href="./past">past</a>
+          </li>
+          <li>
+            <a href="./comment">comments</a>
+          </li>
+          <li>
+            <a href="./ask">ask</a>
+          </li>
+          <li>
+            <a href="./show">show</a>
+          </li>
+          <li>
+            <a href="./jobs">jobs</a>
+          </li>
+          <li>
+            <a href="./submit">submit</a>
+          </li>
+          <li>
+            <a href="./login">login</a>
+          </li>
+        </ul>
+      </div>
       
-  </form>
-    
-    <ToastContainer position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme="light"
-/>
+      <section className="section">
+      <div className="news">
+        <form>
+        <div className="search" >
+        <p id="Search-text">Search:</p>
+          <input
+            type="text"
+            placeholder="Enter Topic"
+            onChange={(event) => {
+              setSearchBar(event.target.value);
+            }}
+          />
 
-    {isLoading ? <div className="spinner"></div>: <>
-    <article className="title">
-      <h1>{largeTitle.title}</h1>
-      <a href={largeTitle.url} target="_blank" rel="noreffer">Read full artical</a>
-    </article>
-
-      <p className="cat">Category: <span>{query}</span></p>
-      <article className="cards">
-        
-
-       {items.map(({author, created_at, title, url, objectId})=>(
-        <div key={objectId}>
-          <h2>{title}</h2>
-          <ul>
-            <li>by {author}</li>
-            <li><a href={url} target="_blank" rel="noreffer">Read Artical</a></li>
-          </ul>
-          <p>{format(new Date(created_at), 'MMMM dd yyyy')}</p>
         </div>
-       ))}
+        </form>
         
-      </article></>}
-      
-</section>
+        <article className="cards">
+          {!data ? <div className="spinner"></div> : data.slice(0, numItems).map((ele) => <div className="section">
+            <h2>{ele.title}</h2> 
+            <ul>
+            <li>Author:&nbsp;{ele.author}</li>
+            <li><p>posted:&nbsp;{format(new Date(ele.created_at), 'MMMM dd yyyy')}</p></li>
+            <li><a href={ele.url} target="_blank" rel="noreffer">Read Artical</a></li>
+          </ul>
+          
+            
+            </div>  )}
+        </article>
+      </div>
+      </section>
+      <button onClick={() => setNumItems(numItems + 5)}>Load More</button>
+      <span className="horizontalLine"></span>
 
-      
-      
-      
+      <div className="bottom">
+        <div>
+          <p id="bottomp">Applications are open for YC Summer 2023</p>
+        </div>
 
-        
-      
-    </>
+        <div className="aboutUs nav-bar" id="aboutUs">
+          <ul>
+            <li>
+              <a href="./guidelines">Guidelines</a>
+            </li>
+            <li>
+              <a href="./faq">FAQ</a>
+            </li>
+            <li>
+              <a href="./lists">Lists</a>
+            </li>
+            <li>
+              <a href="./api">API</a>
+            </li>
+            <li>
+              <a href="./security">Security</a>
+            </li>
+            <li>
+              <a href="./legal">Legal</a>
+            </li>
+            <li>
+              <a href="./apply">Apply to YC</a>
+            </li>
+            <li>
+              <a href="./contact">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   );
 }
-
-export default App;
